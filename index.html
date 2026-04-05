@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>AlphaBot Pro - Multi-Strategy Trading Bot fur Binance Futures</title>
+    <meta name="description" content="Automatisierter Trading Bot fur Binance Futures mit Dual-Strategie (Sniper + Momentum), echten SL/TP Orders und Telegram Kontrolle. Lebenslange Updates.">
+    <meta name="keywords" content="Trading Bot, Binance Futures, automatisch traden, Crypto Bot, Telegram Bot, Sniper Strategy, Momentum Strategy, Algorithmisches Trading">
+    <meta name="author" content="AlphaBot Pro">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="German">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="AlphaBot Pro - Multi-Strategy Trading Bot">
+    <meta property="og:description" content="Automatisierter Trading Bot fur Binance Futures mit Dual-Strategie und Telegram Kontrolle.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://trading24.gumroad.com/l/toddej">
+    <meta property="og:site_name" content="AlphaBot Pro">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AlphaBot Pro - Multi-Strategy Trading Bot">
+    <meta name="twitter:description" content="Automatisierter Trading Bot fur Binance Futures. 70% Sniper + 30% Momentum Strategie.">
+    
+    <!-- Favicon - Emoji as SVG Data URI -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%230a0a0c' width='100' height='100'/%3E%3Ctext y='.9em' x='50%' text-anchor='middle' font-size='70'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Chart Library -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0c;
+            --bg-secondary: #121215;
+            --bg-tertiary: #1a1a1e;
+            --gold: #d4af37;
+            --gold-light: #f4d76b;
+            --gold-dark: #b8941f;
+            --emerald: #00d26a;
+            --emerald-glow: rgba(0, 210, 106, 0.3);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --crypto-blue: #3772ff;
+            --binance-yellow: #f0b90b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, var(--bg-primary), transparent);
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+        .nav-logo span { color: var(--text-primary); }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+
+        .btn-primary {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--bg-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 30px rgba(212, 175, 55, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-crypto {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--crypto-blue), #1e4fc2);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(55, 114, 255, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-crypto:hover {
+            box-shadow: 0 6px 30px rgba(55, 114, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+        .btn-binance {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--binance-yellow), #c99c09);
+            color: #1a1a1e;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(240, 185, 11, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-binance:hover {
+            box-shadow: 0 6px 30px rgba(240, 185, 11, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 4% 4rem;
+            position: relative;
+            background: radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 50%, rgba(0, 210, 106, 0.05) 0%, transparent 40%);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.25rem;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 100px;
+            color: var(--gold);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            50% { box-shadow: 0 0 20px 5px rgba(212, 175, 55, 0.1); }
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--emerald);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-highlight {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.25rem 1rem;
+            background: linear-gradient(90deg, transparent, rgba(0, 210, 106, 0.15), transparent);
+            border-left: 3px solid var(--emerald);
+            border-right: 3px solid var(--emerald);
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            min-width: 90px;
+        }
+
+        .hero-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--emerald);
+            display: block;
+        }
+        .hero-stat-value.gold { color: var(--gold); }
+
+        .hero-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .hero-buttons .btn-primary,
+        .hero-buttons .btn-crypto {
+            padding: 1rem 1.75rem;
+            font-size: 0.9rem;
+        }
+
+        .hero-payment-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            margin-bottom: 0.75rem;
+        }
+        .section-header h2 span { color: var(--gold); font-style: italic; }
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Features */
+        .features { padding: 5rem 4%; }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+            transform: translateY(-3px);
+        }
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+        .feature-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .feature-highlight { color: var(--gold); font-weight: 600; }
+
+        /* Strategies */
+        .strategies {
+            padding: 5rem 4%;
+            background: var(--bg-secondary);
+        }
+        .strategies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .strategy-card {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 1.75rem;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+        .strategy-card:nth-child(2) { border-color: rgba(0, 210, 106, 0.2); }
+        .strategy-percentage {
+            position: absolute;
+            top: -12px;
+            right: 1.5rem;
+            background: var(--gold);
+            color: var(--bg-primary);
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 0.3rem 0.9rem;
+            border-radius: 100px;
+        }
+        .strategy-card:nth-child(2) .strategy-percentage { background: var(--emerald); }
+        .strategy-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            margin-bottom: 0.75rem;
+        }
+        .strategy-card h3 span { color: var(--gold); }
+        .strategy-card:nth-child(2) h3 span { color: var(--emerald); }
+        .strategy-card p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+        .strategy-details { list-style: none; }
+        .strategy-details li {
+            padding: 0.3rem 0;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .strategy-details li::before {
+            content: '✓';
+            color: var(--gold);
+            font-weight: 700;
+        }
+        .strategy-card:nth-child(2) .strategy-details li::before { color: var(--emerald); }
+
+        /* Setup Section */
+        .setup-section {
+            padding: 5rem 4%;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+        }
+        .setup-container { max-width: 800px; margin: 0 auto; }
+        .setup-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .setup-step {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .step-content h3 {
+            font-size: 1rem;
+            margin-bottom: 0.4rem;
+        }
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+        .step-content ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .step-content li {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            padding: 0.15rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .step-content li::before {
+            content: '•';
+            color: var(--gold);
+        }
+        .step-code {
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 0.6rem 0.9rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.75rem;
+            color: var(--emerald);
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        /* Binance Banner */
+        .binance-banner {
+            background: linear-gradient(135deg, rgba(240, 185, 11, 0.1), rgba(240, 185, 11, 0.05));
+            border: 1px solid rgba(240, 185, 11, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .binance-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+        .binance-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--binance-yellow);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .binance-text h4 {
+            font-size: 1rem;
+            color: var(--binance-yellow);
+            margin-bottom: 0.25rem;
+        }
+        .binance-text p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .binance-text .highlight {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Chart Section */
+        .chart-section { padding: 5rem 4%; }
+        .chart-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .chart-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--emerald);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+        .chart-symbol { font-size: 1rem; font-weight: 700; }
+        .chart-timeframe { display: flex; gap: 0.25rem; }
+        .tf-btn {
+            padding: 0.25rem 0.6rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tf-btn.active {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        .chart-price { text-align: right; }
+        .price-main { font-size: 1.1rem; font-weight: 700; color: var(--emerald); }
+        .price-change { font-size: 0.75rem; color: var(--emerald); }
+        #trading-chart {
+            height: 300px;
+            width: 100%;
+            border-radius: 8px;
+            background: var(--bg-primary);
+        }
+        .chart-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+        }
+        .indicator-label { color: var(--text-muted); }
+        .indicator-value { color: var(--emerald); font-weight: 600; }
+
+        /* Telegram Section */
+        .telegram-section {
+            padding: 5rem 4%;
+            background: var(--bg-secondary);
+        }
+        .telegram-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            align-items: center;
+        }
+        .telegram-visual {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 1rem;
+            border: 1px solid rgba(0, 136, 204, 0.2);
+        }
+        .telegram-msg {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--emerald);
+        }
+        .telegram-msg.command {
+            border-left-color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+        .msg-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.15rem;
+            font-size: 0.7rem;
+        }
+        .msg-sender { color: var(--gold); font-weight: 600; }
+        .msg-time { color: var(--text-muted); }
+        .msg-text { color: var(--text-primary); font-size: 0.8rem; }
+        .telegram-text h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .telegram-text h2 span { color: #08c; }
+        .telegram-text p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .telegram-features { list-style: none; }
+        .telegram-features li {
+            padding: 0.4rem 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 4%;
+            text-align: center;
+        }
+        .cta-box {
+            background: linear-gradient(135deg, var(--bg-secondary), rgba(212, 175, 55, 0.05));
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 2rem 1.25rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .cta-box h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            font-size: 0.9rem;
+        }
+        .price-tag {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+        .price-tag span {
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-left: 0.5rem;
+        }
+        .cta-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+        .cta-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .cta-row a { padding: 1rem 1.75rem; font-size: 0.9rem; }
+        .cta-divider {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            position: relative;
+            width: 100%;
+            text-align: center;
+        }
+        .cta-divider::before,
+        .cta-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 80px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .cta-divider::before { left: 20%; }
+        .cta-divider::after { right: 20%; }
+
+        /* Footer */
+        .footer {
+            padding: 2rem 4%;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .footer a { color: var(--gold); text-decoration: none; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav { padding: 0.75rem 3%; }
+            .nav-links { display: none; }
+            .hero { padding: 5rem 3% 3rem; }
+            .hero-stats-row { gap: 0.5rem; }
+            .hero-stat { padding: 0.75rem; min-width: 75px; }
+            .hero-stat-value { font-size: 1.25rem; }
+            .hero-buttons { flex-direction: column; width: 100%; }
+            .hero-buttons a { width: 100%; justify-content: center; }
+            .features, .strategies, .chart-section, .telegram-section, .cta-section, .setup-section { padding: 3.5rem 3%; }
+            #trading-chart { height: 240px; }
+            .chart-header { flex-direction: column; align-items: flex-start; }
+            .chart-price { align-self: flex-end; }
+            .setup-step { flex-direction: column; gap: 0.75rem; }
+            .binance-banner { flex-direction: column; text-align: center; }
+            .binance-content { flex-direction: column; }
+            .cta-row { flex-direction: column; width: 100%; }
+            .cta-row a { width: 100%; justify-content: center; }
+            .cta-divider::before, .cta-divider::after { width: 50px; }
+            .cta-divider::before { left: 10%; }
+            .cta-divider::after { right: 10%; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.75rem; }
+            .section-header h2 { font-size: 1.5rem; }
+            .price-tag { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <nav class="nav">
+        <div class="nav-logo">ALPHA<span>BOT</span></div>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#setup">Setup</a></li>
+            <li><a href="#telegram">Telegram</a></li>
+        </ul>
+        <a href="#kaufen" class="btn-primary">Jetzt Kaufen</a>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">Live Trading</div>
+            <h1>
+                Multi-Strategy<br>
+                <em>Trading Bot</em>
+                <span class="hero-highlight">Fuer Binance Futures</span>
+            </h1>
+            <p class="hero-subtitle">
+                Dual-Strategie-Vollautomatisierung mit echten SL/TP Orders. 
+                Hedge-Mode-Support und Telegram-Kontrolle.
+            </p>
+            
+            <div class="hero-stats-row">
+                <div class="hero-stat">
+                    <span class="hero-stat-value">+24.8%</span>
+                    <span class="hero-stat-label">Avg Profit</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value gold">70/30</span>
+                    <span class="hero-stat-label">Split</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">24/7</span>
+                    <span class="hero-stat-label">Auto</span>
+                </div>
+            </div>
+
+            <div class="hero-cta-group">
+                <div class="hero-buttons">
+                    <a href="https://trading24.gumroad.com/l/toddej?a=237257619" class="btn-primary">
+                        Auf Gumroad
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                        </svg>
+                    </a>
+                    <a href="https://pay.oxapay.com/12674676" class="btn-crypto">
+                        Mit Crypto
+                        <span style="font-size: 0.8rem;">&#8383;</span>
+                    </a>
+                </div>
+                <div class="hero-payment-info">
+                    Karte &#8226; PayPal &#8226; Bitcoin &#8226; ETH &#8226; USDT
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Warum <span>AlphaBot?</span></h2>
+            <p>Zwei Strategien. Echte Orders. Maximale Kontrolle.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#127919;</div>
+                <h3>Dual-Strategie</h3>
+                <p><span class="feature-highlight">70% Sniper</span> + <span class="feature-highlight">30% Momentum</span> fuer optimale Entries.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128737;</div>
+                <h3>Risk Management</h3>
+                <p>ATR Stop-Loss. <span class="feature-highlight">Echte Binance Orders</span> - keine Simulation.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128241;</div>
+                <h3>Telegram Control</h3>
+                <p>Ueberwache Trades von ueberall. <span class="feature-highlight">Push-Notifications</span>.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#9889;</div>
+                <h3>Hedge Mode</h3>
+                <p><span class="feature-highlight">LONG &amp; SHORT</span> gleichzeitig. Nutze jede Bewegung.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#127897;</div>
+                <h3>Trend-Filter</h3>
+                <p>EMA 50 Filter - nur <span class="feature-highlight">mit dem Trend</span> traden.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128268;</div>
+                <h3>Plug &amp; Play</h3>
+                <p>Setup in <span class="feature-highlight">5 Minuten</span>. Kein Kopfzerbrechen.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="strategies" id="strategien">
+        <div class="section-header">
+            <h2>Die <span>Strategien</span></h2>
+            <p>Zwei bewaehrte Ansaetze, intelligent kombiniert</p>
+        </div>
+        <div class="strategies-grid">
+            <div class="strategy-card">
+                <span class="strategy-percentage">70%</span>
+                <h3><span>SNIPER</span> Strategy</h3>
+                <p>EMA 9/21 Crossover mit Trend-Filter. Praezise Einstiege.</p>
+                <ul class="strategy-details">
+                    <li>Schnelle EMA-Kreuzungen</li>
+                    <li>EMA 50 Trendbestaetigung</li>
+                    <li>Bull- &amp; Bear-Maerkte</li>
+                </ul>
+            </div>
+            <div class="strategy-card">
+                <span class="strategy-percentage">30%</span>
+                <h3><span>MOMENTUM</span> Strategy</h3>
+                <p>EMA + MACD + RSI Kombination. Max Konfluenz.</p>
+                <ul class="strategy-details">
+                    <li>MACD Momentum-Check</li>
+                    <li>RSI Zonen-Filter</li>
+                    <li>Hoehere Winrate</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="setup-section" id="setup">
+        <div class="section-header">
+            <h2>Setup in <span>5 Minuten</span></h2>
+            <p>Keine Programmierkenntnisse noetig - folge einfach diesen Schritten</p>
+        </div>
+        <div class="setup-container">
+            <div class="setup-steps">
+                <div class="setup-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Python installieren</h3>
+                        <p>Stelle sicher, dass Python 3 auf deinem Computer installiert ist.</p>
+                        <span class="step-code">python --version</span>
+                        <ul>
+                            <li>Falls nicht installiert: python.org herunterladen</li>
+                            <li>Bei der Installation "Add to PATH" aktivieren</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="setup-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Abhaengigkeiten installieren</h3>
+                        <p>Oeffne Terminal/Command Prompt und fuehre aus:</p>
+                        <span class="step-code">pip install python-binance python-telegram-bot pandas numpy</span>
+                        <ul>
+                            <li>Dies installiert alle benoetigten Bibliotheken</li>
+                            <li>Kann ein paar Minuten dauern</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="setup-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Datei entpacken</h3>
+                        <p>Extrahiere die heruntergeladene ZIP-Datei in einen Ordner.</p>
+                        <ul>
+                            <li>Du findest: <strong>multi_strategy_bot.py</strong></li>
+                            <li>Oeffne die Datei mit einem Text-Editor (z.B. Notepad++)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="setup-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>API Keys eintragen</h3>
+                        <p>Fuelle die <strong>Config</strong>-Sektion am Anfang der Datei aus:</p>
+                        <ul>
+                            <li><strong>BINANCE_API_KEY</strong> - von deinem Binance Account</li>
+                            <li><strong>BINANCE_SECRET_KEY</strong> - ebenfalls von Binance</li>
+                            <li><strong>TELEGRAM_TOKEN</strong> - von @BotFather</li>
+                            <li><strong>TELEGRAM_CHAT_ID</strong> - deine Chat ID</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="setup-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Bot starten</h3>
+                        <p>Speichere die Datei und fuehre sie aus:</p>
+                        <span class="step-code">python multi_strategy_bot.py</span>
+                        <ul>
+                            <li>Waehle Symbol (z.B. BTCUSDT) und Timeframe (z.B. 15m)</li>
+                            <li>Lege dein Leverage fest (empfohlen: 5-10x)</li>
+                            <li>Fertig! Der Bot tradet nun automatisch</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="binance-banner">
+                <div class="binance-content">
+                    <div class="binance-icon">&#127873;</div>
+                    <div class="binance-text">
+                        <h4>Noch kein Binance Konto?</h4>
+                        <p>Sichere dir bis zu <span class="highlight">400 USDC</span> Bonus mit meinem Referral-Link!</p>
+                    </div>
+                </div>
+                <a href="https://www.binance.com/referral/earn-together/refer2earn-usdc/claim?hl=de&amp;ref=GRO_28502_SW4GN&amp;utm_source=referral_entrance" 
+                   class="btn-binance" target="_blank" rel="noopener">
+                    400 USDC Bonus sichern
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="chart-section" id="chart">
+        <div class="section-header">
+            <h2>Live <span>Chart</span></h2>
+            <p>Strategie in Aktion - Echtzeit-Analyse</p>
+        </div>
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <div class="live-dot"></div>
+                    <span class="chart-symbol">BTCUSDT</span>
+                    <div class="chart-timeframe">
+                        <button class="tf-btn">1H</button>
+                        <button class="tf-btn active">15M</button>
+                        <button class="tf-btn">5M</button>
+                    </div>
+                </div>
+                <div class="chart-price">
+                    <div class="price-main" id="live-price">$43,247.85</div>
+                    <div class="price-change">+2.34%</div>
+                </div>
+            </div>
+            <div id="trading-chart"></div>
+            <div class="chart-indicators">
+                <div class="indicator"><span class="indicator-label">Sniper:</span><span class="indicator-value">BUY</span></div>
+                <div class="indicator"><span class="indicator-label">Momentum:</span><span class="indicator-value">BULLISH</span></div>
+                <div class="indicator"><span class="indicator-label">EMA 9/21:</span><span class="indicator-value">GOLDEN CROSS</span></div>
+                <div class="indicator"><span class="indicator-label">Trend:</span><span class="indicator-value">&#8593;</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="telegram-section" id="telegram">
+        <div class="section-header">
+            <h2>Telegram <span>Integration</span></h2>
+            <p>Volle Kontrolle in deiner Hosentasche</p>
+        </div>
+        <div class="telegram-content">
+            <div class="telegram-visual">
+                <div class="telegram-msg command">
+                    <div class="msg-header"><span class="msg-sender">Du</span><span class="msg-time">14:32</span></div>
+                    <div class="msg-text">/status</div>
+                </div>
+                <div class="telegram-msg">
+                    <div class="msg-header"><span style="color:#08c;font-weight:600;">AlphaBot</span><span class="msg-time">14:32:05</span></div>
+                    <div class="msg-text">&#128202; P&amp;L: +24.8%<br>Pos: 3 | Balance: $12,450</div>
+                </div>
+                <div class="telegram-msg command">
+                    <div class="msg-header"><span class="msg-sender">Du</span><span class="msg-time">14:35</span></div>
+                    <div class="msg-text">/close XRP</div>
+                </div>
+                <div class="telegram-msg">
+                    <div class="msg-header"><span style="color:#08c;font-weight:600;">AlphaBot</span><span class="msg-time">14:35:02</span></div>
+                    <div class="msg-text">&#9989; Closed XRPUSDT<br>Profit: +3.2%</div>
+                </div>
+            </div>
+            <div class="telegram-text">
+                <h2>Dein <span>Dashboard</span></h2>
+                <p>Ueberwache Trades, erhalte Alerts und steuere alles per Telegram.</p>
+                <ul class="telegram-features">
+                    <li>&#8594; Live Trade-Alerts</li>
+                    <li>&#8594; Balance &amp; P&amp;L Check</li>
+                    <li>&#8594; Manuelles Schliessen</li>
+                    <li>&#8594; Auto-Reports</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section" id="kaufen">
+        <div class="cta-box">
+            <h2>Starte jetzt!</h2>
+            <p>Einmaliger Kauf. Lebenslange Updates. Voller Quellcode.</p>
+            <div class="price-tag">
+                &#8364;299
+                <span>&#8364;499</span>
+            </div>
+            
+            <div class="cta-buttons">
+                <div class="cta-row">
+                    <a href="https://trading24.gumroad.com/l/toddej?a=237257619" class="btn-primary" style="padding:1rem 2rem;font-size:1rem;">
+                        Auf Gumroad
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                        </svg>
+                    </a>
+                </div>
+                
+                <div class="cta-divider">oder</div>
+                
+                <div class="cta-row">
+                    <a href="https://pay.oxapay.com/12674676" class="btn-crypto" style="padding:1rem 2rem;font-size:1rem;">
+                        Mit Crypto zahlen
+                        <span style="font-size:0.9rem;">&#8383;</span>
+                    </a>
+                </div>
+            </div>
+            
+            <p style="margin-top:1.5rem;font-size:0.75rem;color:var(--text-muted);">
+                30 Tage Geld-zurueck &#8226; Sofortiger Download &#8226; BTC, ETH, USDT
+            </p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&#169; 2026 AlphaBot Pro</p>
+        <p style="margin-top:0.5rem;">
+            <a href="https://trading24.gumroad.com/l/toddej?a=237257619">Gumroad</a> &#8226; 
+            <a href="https://pay.oxapay.com/12674676">Oxapay</a> &#8226; 
+            <a href="https://www.binance.com/referral/earn-together/refer2earn-usdc/claim?hl=de&amp;ref=GRO_28502_SW4GN&amp;utm_source=referral_entrance">Binance Bonus</a>
+        </p>
+    </footer>
+
+    <script>
+        // Background
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const particles = [];
+        for (let i = 0; i < 20; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                size: Math.random() * 2 + 1,
+                color: Math.random() > 0.5 ? 'rgba(212, 175, 55, 0.3)' : 'rgba(0, 210, 106, 0.2)'
+            });
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 12, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.height; i += 60) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+            for (let i = 0; i < canvas.width; i += 80) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            });
+
+            particles.forEach((p1, i) => {
+                particles.slice(i + 1).forEach(p2 => {
+                    const dx = p1.x - p2.x, dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        ctx.strokeStyle = `rgba(212, 175, 55, ${0.1 * (1 - dist / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                });
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Trading Chart
+        function initChart() {
+            const container = document.getElementById('trading-chart');
+            if (!container || typeof LightweightCharts === 'undefined') return;
+
+            const chart = LightweightCharts.createChart(container, {
+                width: container.clientWidth,
+                height: container.clientHeight,
+                layout: { background: { type: 'solid', color: '#0a0a0c' }, textColor: '#a1a1aa' },
+                grid: { vertLines: { color: 'rgba(255, 255, 255, 0.05)' }, horzLines: { color: 'rgba(255, 255, 255, 0.05)' } },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal, vertLine: { color: '#d4af37' }, horzLine: { color: '#d4af37' } },
+                rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                timeScale: { borderColor: 'rgba(255, 255, 255, 0.1)' },
+            });
+
+            const candles = chart.addCandlestickSeries({
+                upColor: '#00d26a', downColor: '#ef4444',
+                borderUpColor: '#00d26a', borderDownColor: '#ef4444',
+                wickUpColor: '#00d26a', wickDownColor: '#ef4444'
+            });
+
+            const data = [];
+            let price = 43200;
+            const now = new Date();
+            now.setMinutes(Math.floor(now.getMinutes() / 15) * 15, 0, 0);
+            
+            for (let i = 50; i >= 0; i--) {
+                const time = new Date(now.getTime() - i * 15 * 60 * 1000);
+                const open = price + (Math.random() - 0.5) * 100;
+                const close = open + (Math.random() - 0.4) * 120 + Math.sin(i * 0.1) * 50;
+                const high = Math.max(open, close) + Math.random() * 50;
+                const low = Math.min(open, close) - Math.random() * 50;
+                data.push({ time: time.getTime() / 1000, open, high, low, close });
+                price = close;
+            }
+            candles.setData(data);
+
+            const ema9 = chart.addLineSeries({ color: '#d4af37', lineWidth: 2 });
+            ema9.setData(calcEMA(data, 9));
+
+            const ema21 = chart.addLineSeries({ color: '#f4d76b', lineWidth: 2 });
+            ema21.setData(calcEMA(data, 21));
+
+            const markers = [];
+            for (let i = 15; i < data.length - 3; i++) {
+                if (data[i].close > data[i-1].close && Math.random() > 0.75) {
+                    markers.push({ time: data[i].time, position: 'belowBar', color: '#00d26a', shape: 'arrowUp', size: 1, text: 'BUY' });
+                }
+            }
+            candles.setMarkers(markers);
+            chart.timeScale().fitContent();
+
+            setInterval(() => {
+                const last = data[data.length - 1];
+                const newPrice = last.close + (Math.random() - 0.5) * 30;
+                last.high = Math.max(last.high, newPrice);
+                last.low = Math.min(last.low, newPrice);
+                last.close = newPrice;
+                candles.update(last);
+                const el = document.getElementById('live-price');
+                if (el) el.textContent = '$' + newPrice.toFixed(2);
+            }, 2000);
+
+            window.addEventListener('resize', () => {
+                chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+            });
+        }
+
+        function calcEMA(data, period) {
+            const k = 2 / (period + 1), result = [];
+            let ema = data[0].close;
+            for (let i = 0; i < data.length; i++) {
+                if (i === 0) ema = data[i].close;
+                else ema = data[i].close * k + ema * (1 - k);
+                result.push({ time: data[i].time, value: ema });
+            }
+            return result;
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initChart);
+        } else {
+            initChart();
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
